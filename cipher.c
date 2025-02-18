@@ -4,15 +4,17 @@
 #include <ctype.h>
 #include <dirent.h>
 
+#define LENGTH 100
+
 void menu1(FILE *file);
-void menu2(FILE *file);
-void menu3(FILE *file, char *file_name);
+void menu2(FILE *file, char *file_name);
+void menu3(FILE *file);
 
 int main()
 {
 	FILE *file = NULL;
 	int menu = 0, flag_end = 1;
-	char *file_name = malloc(100);
+	char file_name[100];
 	while (flag_end != 0)
 	{
 		scanf("%d", &menu);
@@ -22,153 +24,111 @@ int main()
 			scanf("%s", file_name);
 			file = fopen(file_name, "r");
 			menu1(file);
-			fclose(file);
 			break;
-		
 		case 2:
-			file = fopen(file_name, "a");
-			menu2(file);
-			fclose(file);
-			file = fopen(file_name, "r");
-			menu1(file);
-			fclose(file);
+			menu2(file, file_name);
 			break;
 		case 3:
-			printf("tut11");
-			menu3(file, file_name);
-			printf("tut12");
+			menu3(file);
 			break;
 		case -1:
 			flag_end = 0;
 			break;
 		default:
-			printf("n/a1\n");
+			printf("n/a\n");
 			break;
 		}
 	}
-	free(file_name);
-	
-	// char file_name[100], ch, ch_test[100];
-	// int menu = 1, err = 1;
-	// FILE *file;
-	// while (scanf("%d", &menu) == 1 && menu != -1 && err == 1)
-	// {
-	// 	if (menu == 1)
-	// 	{
-	// 		scanf("%s", file_name);
-	// 		file = fopen(file_name, "r");
-	// 		if (file == NULL) err = 0;
-	// 		else
-	// 		{
-	// 			while ((ch = fgetc(file)) != EOF) {
-	// 				putchar(ch);
-	// 			}
-	// 			fclose(file);
-	// 		}
-	// 	}
-	// 	else if (menu == 2)
-	// 	{
-	// 		char text[100];
-	// 		scanf("%s", text);
-	// 		file = fopen(file_name, "a");
-	// 		if (file == NULL) err = 0;
-	// 		fputs(text, file);
-    // 		fputs("\n", file);
-	// 		fclose(file);
-	// 		file = fopen(file_name, "r");
-	// 		if (file == NULL) err = 0;
-	// 		else
-	// 		{
-	// 			while ((ch = fgetc(file)) != EOF) {
-	// 				putchar(ch);
-	// 			}
-	// 			fclose(file);
-	// 		}
-	// 	}
-	// 	else if (menu == 3)
-	// 	{
-	// 		int enc;
-	// 		if (scanf("%d", &enc) != 1 || enc < 0 || enc > 27) err = 0;
-	// 		char file_c[3] = {"ai_modules//m1.c", "ai_modules//m2.c"};
-	// 		char file_h[3] = {"ai_modules//m1.h", "ai_modules//m2.h"};
-	// 		for (int i = 0; i < 2; i++)
-	// 		{
-	// 			file = fopen(file_h[i], "w");
-	// 			fputc("", file);
-	// 			fclose(file);
-	// 			file = fopen(file_c[i], "r");
-	// 			if (file == NULL) err = 0;
-	// 			else
-	// 			{
-	// 				int i = 0;
-	// 				while ((ch = fgetc(file)) != EOF) {
-	// 					if (islower(ch) && ch != '\0' && ch != '\n') ch_test[i] = (((ch - 'a') + enc) % 26) + 'a';
-	// 					else if (ch != '\0' && ch != '\n') ch_test[i] = (((ch - 'A') + enc) % 26) + 'A';
-	// 					i++;
-	// 				}
-	// 				fclose(file);
-	// 			}
-	// 			file = fopen(file_name, "w");
-	// 			fputs(ch_test, file);
-	// 			fclose(file);
-	// 		}
-	// 	}
-	// 	else if (menu == 4)
-	// 	{
-
-	// 	}
-	// }
-	// if (err == 0 && menu != -1) printf("n/a");
 	return 0;
 }
 
 void menu1(FILE *file)
 {
-	char ch;
 	if (file == NULL)
 	{
 		printf("n/a\n");
+		return;
 	}
-	else
+	char line[LENGTH];
+	while (fgets(line, sizeof(line), file))
 	{
-		while ((ch = fgetc(file)) != EOF) {
-			putchar(ch);
-		}
-		printf("\n");
+		fputs(line, stdout);
 	}
+	fclose(file);
 }
 
-void menu2(FILE *file)
+void menu2(FILE *file, char *file_name)
 {
-	char *text = malloc(100);
-	scanf("%s", text);
+	if (file == NULL)
+	{
+		printf("n/a\n");
+		return;
+	}
+	file = fopen(file_name, "a");
+	char text[LENGTH];
+	getchar();
+	fgets(text, sizeof(text), stdin);
 	fputs(text, file);
-	free(text);
+	fclose(file);
+	file = fopen(file_name, "r");
+	menu1(file);
 }
 
-void menu3(FILE *file, char *file_name)
+void menu3(FILE *file)
 {
-	int enc;
-	char ch, *ch_arr = malloc(100);
+	DIR *dir;
+    struct dirent *ent;
+    char *ext_c = ".c", *ext_h = ".h";
+	int enc = 0;
 	scanf("%d", &enc);
-	char *file_c[3] = {"ai_modules//m1.c", "ai_modules//m2.c"};
-	char *file_h[3] = {"ai_modules//m1.h", "ai_modules//m2.h"};
-	for (int i = 0; i < 2; i++)
+	if ((dir = opendir("ai_modules")) != NULL)
 	{
-		file = fopen(file_h[i], "w");
-		fputc("", file);
-		fclose(file);
-		file = fopen(file_c[i], "r");
-		int i = 0;
-		while ((ch = fgetc(file)) != EOF) {
-			if (islower(ch) && ch != '\0' && ch != '\n') ch_arr[i] = ((ch - 'a') + enc) % 26 + 'a';
-			else if (ch != '\0' && ch != '\n') ch_arr[i] = ((ch - 'A') + enc) % 26 + 'A';
-			i++;
+		while ((ent = readdir(dir)) != NULL)
+		{
+			char *file_ext = strrchr(ent->d_name, '.');
+			if (file_ext != NULL && strcmp(file_ext, ext_h) == 0)
+			{
+				char path[200] = {"ai_modules/"};
+				strcat(path, ent->d_name);
+				file = fopen(path, "w");
+				if (file == NULL)
+				{
+					printf("n/a\n");
+					return;
+				}
+				fclose(file);
+			}
+			if (file_ext != NULL && strcmp(file_ext, ext_c) == 0)
+			{
+				char path[200] = {"ai_modules/"};
+				strcat(path, ent->d_name);
+				file = fopen(path, "r");
+				char ch_arr[LENGTH], file_in_memory[LENGTH * 100];
+				while (fgets(ch_arr, sizeof(ch_arr), file))
+				{
+					for (int i = 0; ch_arr[i]; i++)
+					{
+						if (isalpha(ch_arr[i]))
+						{
+							if (islower(ch_arr[i])) 
+								ch_arr[i] = ((ch_arr[i] - 'a') + enc) % 26 + 'a';
+							else
+								ch_arr[i] = ((ch_arr[i] - 'A') + enc) % 26 + 'A';
+						}
+					}
+					strcat(file_in_memory, ch_arr);
+				}
+				fclose(file);
+				file = fopen(path, "w");
+				if (file == NULL)
+				{
+					printf("n/a\n");
+					return;
+				}
+				fputs(file_in_memory, file);
+				fclose(file);
+				memset(file_in_memory, 0, sizeof(file_in_memory));
+			}
 		}
-		fclose(file);
-		file = fopen(file_name, "w");
-		fputs(ch_arr, file);
-		fclose(file);
 	}
-	free(ch_arr);
 }
